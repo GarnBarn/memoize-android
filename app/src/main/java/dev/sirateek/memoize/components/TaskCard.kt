@@ -1,23 +1,22 @@
 package dev.sirateek.memoize.components
 
-import android.graphics.fonts.FontStyle
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
@@ -29,7 +28,6 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.graphics.toColorInt
 import com.google.type.DateTime
 import dev.sirateek.memoize.models.Tag
 import dev.sirateek.memoize.models.TagList
@@ -51,7 +49,8 @@ class TaskParamProvider : PreviewParameterProvider<TaskCardParam> {
                     "",
                     ""
                 ),
-                Modifier
+                Modifier,
+                onClick = { }
             ),
             TaskCardParam(
                 Task(
@@ -67,14 +66,16 @@ class TaskParamProvider : PreviewParameterProvider<TaskCardParam> {
                     "",
                     ""
                 ),
-                Modifier
+                Modifier,
+                onClick = { }
             ),
         )
 }
 
 data class TaskCardParam (
     val task: Task,
-    val modifier: Modifier
+    val modifier: Modifier,
+    val onClick: () -> Unit
 )
 
 @Preview(showBackground = true, showSystemUi = true)
@@ -86,7 +87,12 @@ fun TaskCard(
         modifier = param.modifier
             .fillMaxWidth()
             .heightIn(150.dp, 300.dp)
-            .padding(20.dp),
+            .padding(20.dp)
+            .clickable(
+                onClick = param.onClick,
+                interactionSource = remember { MutableInteractionSource() },
+                indication = rememberRipple(bounded = true)
+            ),
         colors = CardDefaults.cardColors(
             containerColor = param.task.tag.getMainTagColor(),
         )
