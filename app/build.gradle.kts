@@ -74,4 +74,7 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.7.7")
     implementation("com.google.maps.android:maps-compose:4.3.0")
     implementation("com.google.firebase:firebase-analytics")
+    implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.android.gms:play-services-auth:20.5.0")
+    implementation("com.firebaseui:firebase-ui-auth:7.2.0")
 }
