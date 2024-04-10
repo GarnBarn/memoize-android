@@ -77,4 +77,5 @@ dependencies {
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.android.gms:play-services-auth:20.5.0")
     implementation("com.firebaseui:firebase-ui-auth:7.2.0")
+    implementation("io.coil-kt:coil-compose:2.0.0-rc01")
 }

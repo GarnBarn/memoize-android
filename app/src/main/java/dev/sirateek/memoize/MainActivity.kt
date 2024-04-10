@@ -7,6 +7,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import dev.sirateek.memoize.ui.theme.MemoizeTheme
+import dev.sirateek.memoize.views.MainView
 
 class MainActivity: ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -15,14 +16,9 @@ class MainActivity: ComponentActivity() {
         setContent {
             MemoizeTheme {
                 Surface {
-                    MainContent()
+                    MainView()
                 }
             }
         }
     }
-}
-
-@Composable
-fun MainContent() {
-    Text(text = "Test")
 }

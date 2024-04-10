@@ -1,5 +1,7 @@
 package dev.sirateek.memoize.components
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -8,13 +10,16 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -30,7 +35,8 @@ import dev.sirateek.memoize.models.Tag
 data class TagBoxParam(
     val tag: Tag,
     val modifier: Modifier = Modifier,
-    val overrideColor: Color?
+    val overrideColor: Color?,
+    val onClick: () -> Unit = {},
 )
 
 class TagBoxParamProvider: PreviewParameterProvider<TagBoxParam> {
@@ -43,8 +49,8 @@ class TagBoxParamProvider: PreviewParameterProvider<TagBoxParam> {
                     color = "#FF0000",
                 ),
                 Modifier,
-                null
-            )
+                null,
+            ) {}
         )
 }
 
@@ -64,7 +70,15 @@ fun TagBox(
         shape = RoundedCornerShape(100),
         modifier = param.modifier
             .widthIn(20.dp, 150.dp)
-        ,
+            .clip(RoundedCornerShape(15.dp))
+            .clickable(
+                onClick = param.onClick,
+                interactionSource = remember { MutableInteractionSource() },
+                indication = rememberRipple(
+                    bounded = true,
+                    color = Color.DarkGray,
+                )
+            ),
         colors = CardDefaults.cardColors(
             containerColor = cardColor,
         )
@@ -72,18 +86,20 @@ fun TagBox(
         Box(modifier = Modifier.padding(7.dp)) {
             Row {
                 Text(text = param.tag.icon.toString())
-                Text(
-                    text = param.tag.title.toString(),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    style = TextStyle(
-                        fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center
-                    ),
-                    modifier = Modifier.padding(
-                        10.dp, 0.dp
-                    ),
-                )
+                if (param.tag.title.toString() != "") {
+                    Text(
+                        text = param.tag.title.toString(),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        style = TextStyle(
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center
+                        ),
+                        modifier = Modifier.padding(
+                            10.dp, 0.dp
+                        ),
+                    )
+                }
             }
 
         }
