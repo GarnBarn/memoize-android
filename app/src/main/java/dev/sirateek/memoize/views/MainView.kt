@@ -63,7 +63,7 @@ fun MainView() {
             }
         }
 
-        Box(modifier = Modifier.padding(vertical=10.dp,horizontal=20.dp)) {
+        Box(modifier = Modifier.padding(start=20.dp, top=10.dp, bottom=10.dp)) {
             Row {
                 TagBox(
                     param = TagBoxParam(
