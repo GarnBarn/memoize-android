@@ -1,6 +1,7 @@
 package dev.sirateek.memoize.views.main
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -19,9 +20,12 @@ import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import dev.sirateek.memoize.components.ProfileImage
 
 @Composable
-fun HeaderSection() {
+fun HeaderSection(
+    onClickProfileIcon: ()->Unit = {}
+) {
     val userProfile = Firebase.auth.currentUser?.photoUrl.toString()
 
     // Header Section
@@ -29,12 +33,13 @@ fun HeaderSection() {
         Row(modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween) {
             Text("🏠 Home", style= TextStyle(fontWeight = FontWeight.Bold, fontSize = 30.sp))
-            Image(
-                painter = rememberAsyncImagePainter(userProfile),
-                contentDescription = null,
+            ProfileImage(
                 modifier = Modifier
                     .size(50.dp)
                     .clip(RoundedCornerShape(999.dp))
+                    .clickable {
+                        onClickProfileIcon()
+                    }
             )
         }
     }

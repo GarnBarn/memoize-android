@@ -30,6 +30,8 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -45,13 +47,25 @@ import dev.sirateek.memoize.models.Tag
 import dev.sirateek.memoize.models.TagList
 import dev.sirateek.memoize.models.Task
 
+class MainViewParamParameterProvider : PreviewParameterProvider<MainViewParam> {
+    override val values = sequenceOf(
+        MainViewParam()
+    )
+}
+data class MainViewParam (
+    val onClickCreateTask: () -> Unit = {},
+    val onClickProfileIcon: () ->Unit = {},
+)
+
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
-fun MainView() {
+fun MainView(
+    @PreviewParameter(MainViewParamParameterProvider::class) param: MainViewParam
+) {
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { },
+                onClick = param.onClickCreateTask,
             ) {
                 Icon(Icons.Filled.Add, "Floating action button.")
             }
@@ -59,7 +73,9 @@ fun MainView() {
         floatingActionButtonPosition = FabPosition.End,
         content= { paddingValue ->
             Column(modifier = Modifier.padding(paddingValue)){
-                HeaderSection()
+                HeaderSection(
+                    onClickProfileIcon = param.onClickProfileIcon
+                )
                 TagListSection(tags = TagList(
                     tags = arrayOf(
                         Tag("", "Test","🏷️", "#9CCC65"),
