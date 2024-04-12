@@ -70,9 +70,10 @@ class LoginActivity : ComponentActivity() {
 
     fun routeToMainActivity() {
         Toast.makeText(this, "Welcome ${Firebase.auth.currentUser?.email.toString()} to Memoize", Toast.LENGTH_LONG).show()
-
         val i = Intent(this, MainActivity::class.java)
+        i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
         startActivity(i)
+        finish()
     }
 
 
