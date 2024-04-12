@@ -3,6 +3,7 @@ package dev.sirateek.memoize
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import dev.sirateek.memoize.ui.theme.MemoizeTheme
 import dev.sirateek.memoize.views.main.MainView
