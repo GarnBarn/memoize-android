@@ -32,7 +32,6 @@ import dev.sirateek.memoize.providers
 
 @Composable
 fun ProfileView(
-    ctx: Context,
     onClickBack: () -> Unit,
     onClickSignOut: () -> Unit
 ) {

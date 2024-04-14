@@ -19,6 +19,7 @@ import dev.sirateek.memoize.ui.theme.MemoizeTheme
 import dev.sirateek.memoize.views.main.MainView
 import dev.sirateek.memoize.views.main.MainViewParam
 import dev.sirateek.memoize.views.profile.ProfileView
+import dev.sirateek.memoize.views.reminder.CreateReminderView
 import kotlin.math.sign
 
 class MainActivity: ComponentActivity() {
@@ -59,19 +60,23 @@ fun BaseNavHost(ctx: Context, signOutFunction: () -> Unit) {
                         navController.navigate("profile")
                     },
                     onClickCreateTask = {
-                        navController.navigate("create-task")
+                        navController.navigate("create-reminder")
                     }
                 )
             )
         }
 
-        composable("account") {
-
+        composable("create-reminder") {
+            CreateReminderView(
+                {
+                    navController.popBackStack()
+                },
+                {}
+            )
         }
 
         composable("profile") {
             ProfileView(
-                ctx,
                 {
                     navController.popBackStack()
                 },
