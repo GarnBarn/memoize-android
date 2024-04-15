@@ -73,10 +73,10 @@ fun BaseNavHost(ctx: Context, signOutFunction: () -> Unit) {
 
         composable("create-reminder") {
             CreateReminderView(
+                ctx,
                 {
                     navController.popBackStack()
                 },
-                {}
             )
         }
 

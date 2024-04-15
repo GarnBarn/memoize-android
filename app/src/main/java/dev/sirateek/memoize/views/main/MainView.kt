@@ -133,7 +133,7 @@ fun MainView(
             taskList.add(res)
         }
 
-        taskList.sortByDescending { sortIT -> sortIT.dueDate }
+        taskList.sortBy { sortIT -> sortIT.dueDate }
     }
 
     GetTasks {

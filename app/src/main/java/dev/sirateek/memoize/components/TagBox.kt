@@ -66,6 +66,12 @@ fun TagBox(
         cardColor = param.overrideColor
     }
 
+    var textColor = Color.Black
+    val contrast = calculateContrastRatio(Color.White, cardColor)
+    if (contrast < 1.5f) {
+        textColor = Color.White
+    }
+
     Card (
         shape = RoundedCornerShape(100),
         modifier = param.modifier
