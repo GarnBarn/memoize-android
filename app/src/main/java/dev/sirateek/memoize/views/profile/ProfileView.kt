@@ -5,6 +5,7 @@ import android.content.Intent
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -36,7 +37,7 @@ fun ProfileView(
     onClickSignOut: () -> Unit
 ) {
     Column(
-        modifier = Modifier.fillMaxWidth().padding(5.dp)
+        modifier = Modifier.fillMaxWidth().fillMaxHeight().padding(5.dp)
     ) {
         Button(onClick=onClickBack) {
             Text(text = "<")

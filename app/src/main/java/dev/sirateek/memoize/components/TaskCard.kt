@@ -161,7 +161,7 @@ fun TaskCard(
                 Text(text = param.task.description.toString(), style = TextStyle(color = textColor))
                 Spacer(modifier = Modifier.height(20.dp))
                 Text(
-                    text =  "Due ${SimpleDateFormat("dd/MM/yyyy - HH:MM", Locale.getDefault()).format(param.task.dueDate)}",
+                    text =  "Due ${SimpleDateFormat("dd/MM/yyyy - HH:mm", Locale.getDefault()).format(param.task.dueDate)}",
                     modifier = Modifier.fillMaxWidth(),
                     style = TextStyle(
                         textAlign = TextAlign.End,
