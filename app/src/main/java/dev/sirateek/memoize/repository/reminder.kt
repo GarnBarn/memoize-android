@@ -7,3 +7,7 @@ import com.google.firebase.ktx.Firebase
 fun ReminderRepository(): CollectionReference {
     return Firebase.firestore.collection("reminder")
 }
+
+fun TagRepository(): CollectionReference {
+    return Firebase.firestore.collection("tag")
+}

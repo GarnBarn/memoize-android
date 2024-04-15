@@ -20,6 +20,8 @@ import dev.sirateek.memoize.views.main.MainView
 import dev.sirateek.memoize.views.main.MainViewParam
 import dev.sirateek.memoize.views.profile.ProfileView
 import dev.sirateek.memoize.views.reminder.CreateReminderView
+import dev.sirateek.memoize.views.tag.TagCreate
+import dev.sirateek.memoize.views.tag.TagManage
 import kotlin.math.sign
 
 class MainActivity: ComponentActivity() {
@@ -61,6 +63,9 @@ fun BaseNavHost(ctx: Context, signOutFunction: () -> Unit) {
                     },
                     onClickCreateTask = {
                         navController.navigate("create-reminder")
+                    },
+                    onClickManageTag = {
+                        navController.navigate("tag-manage")
                     }
                 )
             )
@@ -82,6 +87,26 @@ fun BaseNavHost(ctx: Context, signOutFunction: () -> Unit) {
                 },
                 signOutFunction,
                 )
+        }
+
+        composable("tag-manage") {
+            TagManage(
+                {
+                    navController.popBackStack()
+                },
+                {
+                    navController.navigate("tag-create")
+                }
+            )
+        }
+
+        composable("tag-create") {
+            TagCreate(
+                ctx,
+                {
+                    navController.popBackStack()
+                },
+            )
         }
     }
 }

@@ -69,6 +69,7 @@ class MainViewParamParameterProvider : PreviewParameterProvider<MainViewParam> {
 data class MainViewParam (
     val onClickCreateTask: () -> Unit = {},
     val onClickProfileIcon: () ->Unit = {},
+    val onClickManageTag: () -> Unit = {},
 )
 
 @Preview(showBackground = true, showSystemUi = true)
@@ -144,15 +145,18 @@ fun MainView(
                         }
                     }
                 )
-                TagListSection(tags = TagList(
-                    tags = mutableListOf(
-                        Tag("", "Test","🏷️", "#9CCC65"),
-                        Tag("", "Test2","🔥","#9CCC65"),
-                        Tag("", "Test2","🔥","#9CCC65"),
-                        Tag("", "Test2","🔥","#9CCC65"),
-                        Tag("", "Test2","🔥","#9CCC65"),
+                TagListSection(
+                    tags = TagList(
+                        tags = mutableListOf(
+                            Tag("", "Test","🏷️", "#9CCC65"),
+                            Tag("", "Test2","🔥","#9CCC65"),
+                            Tag("", "Test2","🔥","#9CCC65"),
+                            Tag("", "Test2","🔥","#9CCC65"),
+                            Tag("", "Test2","🔥","#9CCC65"),
+                        ),
                     ),
-                ))
+                    onClickManageTag = param.onClickManageTag,
+                )
                 TaskListSection(param = taskList)
             }
         }

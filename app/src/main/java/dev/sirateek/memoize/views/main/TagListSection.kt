@@ -19,25 +19,10 @@ import dev.sirateek.memoize.models.Tag
 import dev.sirateek.memoize.models.TagList
 
 
-class TagListSectionPreviewParam : PreviewParameterProvider<TagList> {
-    override val values: Sequence<TagList> = sequenceOf(
-                        TagList(
-                            mutableListOf(
-                                Tag("", "Test","🏷️", "#9CCC65"),
-                                Tag("", "Test2","🔥","#9CCC65"),
-                                Tag("", "Test2","🔥","#9CCC65"),
-                                Tag("", "Test2","🔥","#9CCC65"),
-                                Tag("", "Test2","🔥","#9CCC65"),
-                            )
-                        )
-                    )
-}
-
-
-@Preview(showBackground = true)
 @Composable
 fun TagListSection(
-    @PreviewParameter(TagListSectionPreviewParam::class) tags: TagList,
+    tags: TagList,
+    onClickManageTag: () -> Unit,
     ) {
     Box(modifier = Modifier.padding(start=20.dp, top=10.dp, bottom=10.dp)) {
         Row {
@@ -46,6 +31,7 @@ fun TagListSection(
                     tag = Tag(icon = "✏️"),
                     Modifier.padding(horizontal = 5.dp),
                     Color.Gray,
+                    onClick = onClickManageTag,
                 )
             )
 
