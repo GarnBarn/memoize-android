@@ -38,6 +38,7 @@ import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
 import com.google.firebase.messaging.messaging
+import dev.sirateek.memoize.repository.UserRepository
 import dev.sirateek.memoize.ui.theme.MemoizeTheme
 
 val providers = arrayListOf(
@@ -75,7 +76,16 @@ class LoginActivity : ComponentActivity() {
     }
 
     fun routeToMainActivity() {
-        Toast.makeText(this, "Welcome ${Firebase.auth.currentUser?.email.toString()} to Memoize", Toast.LENGTH_LONG).show()
+        val user = Firebase.auth.currentUser
+        Firebase.messaging.token.addOnSuccessListener {
+            // Update the user's FCM Token
+            val userData = hashMapOf(
+                "fcm" to it
+            )
+            UserRepository().document(user?.uid.toString()).set(userData)
+        }
+
+        Toast.makeText(this, "Welcome ${user?.email.toString()} to Memoize", Toast.LENGTH_LONG).show()
         val i = Intent(this, MainActivity::class.java)
         i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
         startActivity(i)
