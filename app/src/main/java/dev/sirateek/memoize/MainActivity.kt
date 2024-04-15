@@ -91,6 +91,7 @@ fun BaseNavHost(ctx: Context, signOutFunction: () -> Unit) {
 
         composable("tag-manage") {
             TagManage(
+                ctx,
                 {
                     navController.popBackStack()
                 },

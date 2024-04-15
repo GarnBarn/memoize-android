@@ -1,5 +1,7 @@
 package dev.sirateek.memoize.views.tag
 
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,10 +34,12 @@ import dev.sirateek.memoize.components.TagBox
 import dev.sirateek.memoize.components.TagBoxParam
 import dev.sirateek.memoize.models.Tag
 import dev.sirateek.memoize.models.Task
+import dev.sirateek.memoize.repository.ReminderRepository
 import dev.sirateek.memoize.repository.TagRepository
 
 @Composable
 fun TagManage(
+    ctx: Context,
     onClickBack: () -> Unit,
     onClickCreateTag: () -> Unit
 ) {
@@ -94,21 +98,21 @@ fun TagManage(
                                             overrideColor = null,
                                         )
                                     )
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.SpaceBetween
-                                    ) {
-                                        Button(
-                                            onClick = { /*TODO*/ },
 
-                                            ) {
-                                            Text("Edit")
-                                        }
-                                        Button(
-                                            onClick = { /*TODO*/ },
-                                        ) {
-                                            Text("Delete")
-                                        }
+                                    Button(
+                                        onClick = {
+                                            RemoveTag(ctx,tagData.id, {
+                                                GetTags {
+                                                    tagList.clear()
+                                                    for (tagDoc in it.documents) {
+                                                        tagList.add(ParseTags(tagDoc))
+                                                    }
+                                                }
+                                            })
+                                        },
+                                        modifier = Modifier.fillMaxWidth().padding(10.dp)
+                                    ) {
+                                        Text("Delete")
                                     }
                                 }
                             }
@@ -133,4 +137,11 @@ fun ParseTags(doc: DocumentSnapshot): Tag {
     result.icon = doc.getString("icon")
 
     return result
+}
+
+fun RemoveTag(ctx: Context, id: String, onDeleteSuccess: () -> Unit) {
+    TagRepository().document(id).delete().addOnSuccessListener {
+        Toast.makeText(ctx, "Tag $id deleted", Toast.LENGTH_LONG).show()
+        onDeleteSuccess()
+    }
 }

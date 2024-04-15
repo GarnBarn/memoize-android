@@ -1,11 +1,14 @@
 package dev.sirateek.memoize
 
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,12 +29,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
 import com.firebase.ui.auth.data.model.FirebaseAuthUIAuthenticationResult
+import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
+import com.google.firebase.messaging.messaging
 import dev.sirateek.memoize.ui.theme.MemoizeTheme
 
 val providers = arrayListOf(
@@ -79,6 +85,11 @@ class LoginActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        askNotificationPermission()
+
+        Firebase.messaging.token.addOnSuccessListener {
+            Log.d("Firebase FCM Token", it)
+        }
 
         // Check if the user is already logged in.
         // Initialize Firebase Auth
@@ -113,6 +124,33 @@ class LoginActivity : ComponentActivity() {
         val currentUser = auth.currentUser
         if (currentUser != null) {
             Log.d("Auth", "No User Logged in")
+        }
+    }
+
+    // Declare the launcher at the top of your Activity/Fragment:
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            // FCM SDK (and your app) can post notifications.
+        } else {
+            // TODO: Inform user that that your app will not show notifications.
+        }
+    }
+
+    private fun askNotificationPermission() {
+        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) ==
+            PackageManager.PERMISSION_GRANTED
+        ) {
+            // FCM SDK (and your app) can post notifications.
+        } else if (shouldShowRequestPermissionRationale(android.Manifest.permission.POST_NOTIFICATIONS)) {
+            // TODO: display an educational UI explaining to the user the features that will be enabled
+            //       by them granting the POST_NOTIFICATION permission. This UI should provide the user
+            //       "OK" and "No thanks" buttons. If the user selects "OK," directly request the permission.
+            //       If the user selects "No thanks," allow the user to continue without notifications.
+        } else {
+            // Directly ask for the permission
+            requestPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
         }
     }
 }
