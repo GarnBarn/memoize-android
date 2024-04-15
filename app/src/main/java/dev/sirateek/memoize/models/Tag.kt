@@ -4,15 +4,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.core.graphics.toColorInt
 
 data class Tag (
-    val id: String = "",
-    val title: String? = "",
-    val icon: String? = "🏷️",
-    val color: String = "#FF0000",
-    val isRealTag: Boolean = true,
+    var id: String = "",
+    var title: String? = "",
+    var icon: String? = "🏷️",
+    var color: String = "#FF0000",
+    var isRealTag: Boolean = true,
 )
 
-data class TagList(
-    val tags: Array<Tag>
+class TagList(
+    var tags: MutableList<Tag>
 ): Iterable<Tag> {
     private var mainTagColor: Color? = null;
 

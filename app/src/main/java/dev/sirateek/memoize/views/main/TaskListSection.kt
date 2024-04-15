@@ -17,6 +17,7 @@ import dev.sirateek.memoize.components.TaskCardParam
 import dev.sirateek.memoize.models.Tag
 import dev.sirateek.memoize.models.TagList
 import dev.sirateek.memoize.models.Task
+import java.util.Date
 
 class TaskListSectionPreviewParam : PreviewParameterProvider<Array<Task>> {
     override val values: Sequence<Array<Task>> = sequenceOf(
@@ -25,9 +26,9 @@ class TaskListSectionPreviewParam : PreviewParameterProvider<Array<Task>> {
                 id="1",
                 title = "Test",
                 tag = TagList(
-                    tags = arrayOf(Tag())
+                    tags = mutableListOf()
                 ),
-                dueDate = DateTime.getDefaultInstance()
+                dueDate = Date()
             ),
     )
     )
@@ -35,25 +36,18 @@ class TaskListSectionPreviewParam : PreviewParameterProvider<Array<Task>> {
 
 @Composable
 fun TaskListSection(
-    @PreviewParameter(TaskListSectionPreviewParam::class) param: Array<Task>
+    @PreviewParameter(TaskListSectionPreviewParam::class) param: MutableList<Task>
 ) {
     // Tasks Section
     val scrollState = rememberScrollState()
     Column(
         modifier = Modifier.verticalScroll(scrollState)
     ) {
-        for (i in 0..20) {
+        for (task in param) {
             Box(modifier = Modifier.padding(vertical = 10.dp, horizontal = 20.dp)) {
                 TaskCard(param =
                 TaskCardParam(
-                    Task(
-                        id = "Test",
-                        title = "Test",
-                        dueDate = DateTime.getDefaultInstance(),
-                        tag = TagList(
-                            tags = arrayOf(Tag(color = "#1FF110")),
-                        ),
-                    ),
+                    task,
                     Modifier,
                 ) {
                     Log.i("Debug", "Test")

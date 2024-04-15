@@ -38,6 +38,9 @@ import com.google.type.DateTime
 import dev.sirateek.memoize.models.Tag
 import dev.sirateek.memoize.models.TagList
 import dev.sirateek.memoize.models.Task
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import kotlin.math.max
 import kotlin.math.min
 
@@ -49,12 +52,12 @@ class TaskParamProvider : PreviewParameterProvider<TaskCardParam> {
                     "Test",
                     "This is very long text hahahahahah TestHello 2 Test Again",
                     TagList(
-                        tags = arrayOf(
+                        tags = mutableListOf(
                             Tag("", "Test","🏷️", "#9CCC65"),
                             Tag("", "Test2","🔥","#9CCC65"),
                         )
                     ),
-                    DateTime.getDefaultInstance(),
+                    Date(),
                     "",
                     ""
                 ),
@@ -67,11 +70,11 @@ class TaskParamProvider : PreviewParameterProvider<TaskCardParam> {
                     "Small Text",
 
                     TagList(
-                        tags = arrayOf(
+                        tags = mutableListOf(
                             Tag("", "Test","🏷️","#FF0000"),
                             )
                     ),
-                    DateTime.getDefaultInstance(),
+                    Date(),
                     "",
                     ""
                 ),
@@ -151,7 +154,7 @@ fun TaskCard(
                 }
                 Spacer(modifier = Modifier.height(20.dp))
                 Text(
-                    text = "Due 20 Feb 2023",
+                    text =  "Due ${SimpleDateFormat("dd/MM/yyyy - HH:MM", Locale.getDefault()).format(param.task.dueDate)}",
                     modifier = Modifier.fillMaxWidth(),
                     style = TextStyle(
                         textAlign = TextAlign.End,

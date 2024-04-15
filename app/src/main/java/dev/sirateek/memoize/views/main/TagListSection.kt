@@ -22,7 +22,7 @@ import dev.sirateek.memoize.models.TagList
 class TagListSectionPreviewParam : PreviewParameterProvider<TagList> {
     override val values: Sequence<TagList> = sequenceOf(
                         TagList(
-                            arrayOf(
+                            mutableListOf(
                                 Tag("", "Test","🏷️", "#9CCC65"),
                                 Tag("", "Test2","🔥","#9CCC65"),
                                 Tag("", "Test2","🔥","#9CCC65"),

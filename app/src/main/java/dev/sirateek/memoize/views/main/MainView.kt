@@ -23,6 +23,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -36,7 +38,12 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.Filter
+import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.QuerySnapshot
+import com.google.firebase.firestore.toObject
 import com.google.firebase.ktx.Firebase
 import com.google.type.DateTime
 import dev.sirateek.memoize.components.TagBox
@@ -46,6 +53,13 @@ import dev.sirateek.memoize.components.TaskCardParam
 import dev.sirateek.memoize.models.Tag
 import dev.sirateek.memoize.models.TagList
 import dev.sirateek.memoize.models.Task
+import dev.sirateek.memoize.repository.ReminderRepository
+import kotlinx.coroutines.tasks.await
+import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.Date
+import java.util.Locale
 
 class MainViewParamParameterProvider : PreviewParameterProvider<MainViewParam> {
     override val values = sequenceOf(
@@ -62,6 +76,55 @@ data class MainViewParam (
 fun MainView(
     @PreviewParameter(MainViewParamParameterProvider::class) param: MainViewParam
 ) {
+
+    var taskList = remember {
+        mutableStateListOf<Task>()
+    }
+
+    val callback = {
+        it: QuerySnapshot ->
+        taskList.clear()
+        for (result in it.documents) {
+            val res = Task()
+            res.id = result.id
+            res.title = result.get("title").toString()
+            res.description = result.get("description").toString()
+
+            res.dueDate = result.getDate("reminder_date_time")!!
+            res.createdAt = result.getDate("created_at") !!
+            res.collection = result.get("collection").toString()
+
+            if (result.get("tags") != null) {
+                val tags = result.get("tags") as List<Map<String, String>>
+                for (tag in tags) {
+                    val tagData = Tag()
+                    tagData.id = tag["id"].toString()
+                    tagData.title = tag["title"].toString()
+                    tagData.color = tag["color"].toString()
+                    tagData.icon = tag["icon"].toString()
+                    tagData.isRealTag = true
+                    res.tag.tags.add(tagData)
+                }
+            }
+
+            val todayDateOnly = Date.parse(SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()))
+            val resDateOnly = Date.parse(SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(res.dueDate))
+
+            val testData = resDateOnly.compareTo(todayDateOnly)
+
+            if (testData == 0) {
+                res.tag.tags.add(0, Tag("today", title = "today", isRealTag = false))
+            }
+
+            taskList.add(res)
+        }
+
+        taskList.sortByDescending { sortIT -> sortIT.dueDate }
+    }
+
+    GetTasks {
+        callback(it)
+    }
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
@@ -74,10 +137,15 @@ fun MainView(
         content= { paddingValue ->
             Column(modifier = Modifier.padding(paddingValue)){
                 HeaderSection(
-                    onClickProfileIcon = param.onClickProfileIcon
+                    onClickProfileIcon = param.onClickProfileIcon,
+                    onClickReload = {
+                        GetTasks {
+                            callback(it)
+                        }
+                    }
                 )
                 TagListSection(tags = TagList(
-                    tags = arrayOf(
+                    tags = mutableListOf(
                         Tag("", "Test","🏷️", "#9CCC65"),
                         Tag("", "Test2","🔥","#9CCC65"),
                         Tag("", "Test2","🔥","#9CCC65"),
@@ -85,17 +153,15 @@ fun MainView(
                         Tag("", "Test2","🔥","#9CCC65"),
                     ),
                 ))
-                TaskListSection(param = arrayOf(
-                    Task(
-                        id="1",
-                        title = "Test",
-                        tag = TagList(
-                            tags = arrayOf(Tag())
-                        ),
-                        dueDate = DateTime.getDefaultInstance()
-                    ),
-                ))
+                TaskListSection(param = taskList)
             }
         }
     )
+}
+
+fun GetTasks(
+    onSuccess: (QuerySnapshot) -> Unit
+) {
+    val uid = Firebase.auth.currentUser?.uid
+    ReminderRepository().whereEqualTo("uid", uid).get().addOnSuccessListener(onSuccess)
 }
