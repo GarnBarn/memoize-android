@@ -46,7 +46,7 @@ fun TagListSection(
                         param = TagBoxParam(
                             tag = tag,
                             Modifier.padding(horizontal = 5.dp),
-                            Color.Gray,
+                            null,
                         )
                     )
                 }

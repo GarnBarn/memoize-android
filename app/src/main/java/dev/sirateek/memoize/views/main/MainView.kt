@@ -54,6 +54,8 @@ import dev.sirateek.memoize.models.Tag
 import dev.sirateek.memoize.models.TagList
 import dev.sirateek.memoize.models.Task
 import dev.sirateek.memoize.repository.ReminderRepository
+import dev.sirateek.memoize.views.tag.GetTags
+import dev.sirateek.memoize.views.tag.ParseTags
 import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
 import java.time.LocalDate
@@ -78,9 +80,20 @@ fun MainView(
     @PreviewParameter(MainViewParamParameterProvider::class) param: MainViewParam
 ) {
 
-    var taskList = remember {
+    val taskList = remember {
         mutableStateListOf<Task>()
     }
+    val tagList = remember {
+        mutableStateListOf<Tag>()
+    }
+
+    GetTags {
+        tagList.clear()
+        for (doc in it.documents) {
+            tagList.add(ParseTags(doc))
+        }
+    }
+
 
     val callback = {
         it: QuerySnapshot ->
@@ -143,17 +156,17 @@ fun MainView(
                         GetTasks {
                             callback(it)
                         }
+                        GetTags {
+                            tagList.clear()
+                            for (doc in it.documents) {
+                                tagList.add(ParseTags(doc))
+                            }
+                        }
                     }
                 )
                 TagListSection(
                     tags = TagList(
-                        tags = mutableListOf(
-                            Tag("", "Test","🏷️", "#9CCC65"),
-                            Tag("", "Test2","🔥","#9CCC65"),
-                            Tag("", "Test2","🔥","#9CCC65"),
-                            Tag("", "Test2","🔥","#9CCC65"),
-                            Tag("", "Test2","🔥","#9CCC65"),
-                        ),
+                        tags = tagList,
                     ),
                     onClickManageTag = param.onClickManageTag,
                 )
