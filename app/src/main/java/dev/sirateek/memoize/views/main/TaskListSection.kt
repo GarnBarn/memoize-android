@@ -19,24 +19,11 @@ import dev.sirateek.memoize.models.TagList
 import dev.sirateek.memoize.models.Task
 import java.util.Date
 
-class TaskListSectionPreviewParam : PreviewParameterProvider<Array<Task>> {
-    override val values: Sequence<Array<Task>> = sequenceOf(
-        arrayOf(
-            Task(
-                id="1",
-                title = "Test",
-                tag = TagList(
-                    tags = mutableListOf()
-                ),
-                dueDate = Date()
-            ),
-    )
-    )
-}
 
 @Composable
 fun TaskListSection(
-    @PreviewParameter(TaskListSectionPreviewParam::class) param: MutableList<Task>
+    param: MutableList<Task>,
+    onClickTag: (Tag) -> Unit
 ) {
     // Tasks Section
     val scrollState = rememberScrollState()
@@ -49,9 +36,9 @@ fun TaskListSection(
                 TaskCardParam(
                     task,
                     Modifier,
-                ) {
-                    Log.i("Debug", "Test")
-                }
+                    onClick = { },
+                    onClickTag = onClickTag,
+                )
                 )
             }
         }

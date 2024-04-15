@@ -31,6 +31,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+val TodayTag = Tag("today", title = "today", isRealTag = false, color = "#8f8f8f")
 class MainViewParamParameterProvider : PreviewParameterProvider<MainViewParam> {
     override val values = sequenceOf(
         MainViewParam()
@@ -65,6 +66,7 @@ fun MainView(
 
     GetTags {
         tagList.clear()
+        tagList.add(TodayTag)
         for (doc in it.documents) {
             tagList.add(ParseTags(doc))
         }
@@ -138,7 +140,7 @@ fun MainView(
             val testData = resDateOnly.compareTo(todayDateOnly)
 
             if (testData == 0) {
-                res.tag.tags.add(0, Tag("today", title = "today", isRealTag = false))
+                res.tag.tags.add(0, TodayTag)
             }
 
             taskList.add(res)
@@ -169,6 +171,7 @@ fun MainView(
                         }
                         GetTags {
                             tagList.clear()
+                            tagList.add(TodayTag)
                             for (doc in it.documents) {
                                 tagList.add(ParseTags(doc))
                             }
@@ -201,9 +204,37 @@ fun MainView(
                     }
                 )
                 if (shouldUseVisibleTaskList.value) {
-                    TaskListSection(param = visibleTaskList)
+                    TaskListSection(param = visibleTaskList, onClickTag = {
+                        if (selectedTag != null) {
+                            shouldUseVisibleTagList.value = false
+                            shouldUseVisibleTaskList.value = false
+                            tagList.clear()
+                            for (tagData in cacheTagList) {
+                                tagList.add(tagData)
+                            }
+
+                            selectedTag = null
+                            return@TaskListSection
+                        }
+                        selectedTag = it
+                        onClickTag()
+                    })
                 } else {
-                    TaskListSection(param = taskList)
+                    TaskListSection(param = taskList, onClickTag = {
+                        if (selectedTag != null) {
+                            shouldUseVisibleTagList.value = false
+                            shouldUseVisibleTaskList.value = false
+                            tagList.clear()
+                            for (tagData in cacheTagList) {
+                                tagList.add(tagData)
+                            }
+
+                            selectedTag = null
+                            return@TaskListSection
+                        }
+                        selectedTag = it
+                        onClickTag()
+                    })
                 }
 
             }

@@ -62,7 +62,8 @@ class TaskParamProvider : PreviewParameterProvider<TaskCardParam> {
                     ""
                 ),
                 Modifier,
-                onClick = { }
+                onClick = { },
+                onClickTag = { }
             ),
             TaskCardParam(
                 Task(
@@ -79,7 +80,8 @@ class TaskParamProvider : PreviewParameterProvider<TaskCardParam> {
                     ""
                 ),
                 Modifier,
-                onClick = { }
+                onClick = { },
+                onClickTag = { }
             ),
         )
 }
@@ -87,7 +89,8 @@ class TaskParamProvider : PreviewParameterProvider<TaskCardParam> {
 data class TaskCardParam (
     val task: Task,
     val modifier: Modifier,
-    val onClick: () -> Unit
+    val onClick: () -> Unit,
+    val onClickTag: (Tag) -> Unit
 )
 
 internal fun calculateContrastRatio(foreground: Color, background: Color): Float {
@@ -149,9 +152,13 @@ fun TaskCard(
                     horizontalArrangement = Arrangement.spacedBy(5.dp)
                 ) {
                     for (tag in param.task.tag.reversed()) {
-                        TagBox(param = TagBoxParam(tag, modifier = Modifier, overrideColor = Color.White))
+                        TagBox(param = TagBoxParam(tag, modifier = Modifier, overrideColor = Color.White, onClick = {
+                            param.onClickTag(tag)
+                        }))
                     }
                 }
+                Spacer(modifier = Modifier.height(5.dp))
+                Text(text = param.task.description.toString(), style = TextStyle(color = textColor))
                 Spacer(modifier = Modifier.height(20.dp))
                 Text(
                     text =  "Due ${SimpleDateFormat("dd/MM/yyyy - HH:MM", Locale.getDefault()).format(param.task.dueDate)}",
