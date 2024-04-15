@@ -9,7 +9,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -34,8 +39,11 @@ fun HeaderSection(
             horizontalArrangement = Arrangement.SpaceBetween) {
             Text("🏠 Home", style= TextStyle(fontWeight = FontWeight.Bold, fontSize = 30.sp))
             Row {
-                Button(onClick = onClickReload) {
-                    Text("Reload")
+                IconButton(onClick = onClickReload) {
+                    Icon(
+                        imageVector = Icons.Default.Refresh,
+                        contentDescription = "reload"
+                    )
                 }
                 ProfileImage(
                     modifier = Modifier

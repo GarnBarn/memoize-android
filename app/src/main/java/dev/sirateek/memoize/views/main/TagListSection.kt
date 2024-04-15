@@ -23,6 +23,7 @@ import dev.sirateek.memoize.models.TagList
 fun TagListSection(
     tags: TagList,
     onClickManageTag: () -> Unit,
+    onClickSomeTag: (Tag) -> Unit,
     ) {
     Box(modifier = Modifier.padding(start=20.dp, top=10.dp, bottom=10.dp)) {
         Row {
@@ -47,6 +48,9 @@ fun TagListSection(
                             tag = tag,
                             Modifier.padding(horizontal = 5.dp),
                             null,
+                            onClick = {
+                                onClickSomeTag(tag)
+                            }
                         )
                     )
                 }

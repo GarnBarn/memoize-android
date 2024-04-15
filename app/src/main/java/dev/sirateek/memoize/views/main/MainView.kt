@@ -1,65 +1,33 @@
 package dev.sirateek.memoize.views.main
 
-import android.util.Log
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
-import androidx.compose.ui.unit.LayoutDirection
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import coil.compose.rememberAsyncImagePainter
-import com.google.firebase.Timestamp
 import com.google.firebase.auth.ktx.auth
-import com.google.firebase.firestore.Filter
-import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.QuerySnapshot
-import com.google.firebase.firestore.toObject
 import com.google.firebase.ktx.Firebase
-import com.google.type.DateTime
-import dev.sirateek.memoize.components.TagBox
-import dev.sirateek.memoize.components.TagBoxParam
-import dev.sirateek.memoize.components.TaskCard
-import dev.sirateek.memoize.components.TaskCardParam
 import dev.sirateek.memoize.models.Tag
 import dev.sirateek.memoize.models.TagList
 import dev.sirateek.memoize.models.Task
 import dev.sirateek.memoize.repository.ReminderRepository
 import dev.sirateek.memoize.views.tag.GetTags
 import dev.sirateek.memoize.views.tag.ParseTags
-import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
 
@@ -83,15 +51,58 @@ fun MainView(
     val taskList = remember {
         mutableStateListOf<Task>()
     }
-    val tagList = remember {
+    var tagList = remember {
         mutableStateListOf<Tag>()
     }
+    var cacheTagList = remember {
+        mutableStateListOf<Tag>()
+    }
+
+    val visibleTaskList = remember {
+        mutableStateListOf<Task>()
+    }
+
 
     GetTags {
         tagList.clear()
         for (doc in it.documents) {
             tagList.add(ParseTags(doc))
         }
+    }
+
+    var selectedTag by remember {
+        mutableStateOf<Tag?>(null)
+    }
+    val shouldUseVisibleTaskList = remember {
+        mutableStateOf(false)
+    }
+
+
+    val shouldUseVisibleTagList = remember {
+        mutableStateOf(false)
+    }
+
+    val onClickTag = {
+        cacheTagList.clear()
+        for (tagData in tagList) {
+            cacheTagList.add(tagData)
+        }
+
+        tagList.clear()
+        tagList.add(selectedTag!!)
+
+        shouldUseVisibleTagList.value = true
+        visibleTaskList.clear()
+        for (eachTask in taskList) {
+            for (eachTag in eachTask.tag) {
+                if (eachTag.id == selectedTag?.id) {
+                    visibleTaskList.add(eachTask)
+                    break
+                }
+            }
+        }
+
+        shouldUseVisibleTaskList.value = true
     }
 
 
@@ -162,6 +173,10 @@ fun MainView(
                                 tagList.add(ParseTags(doc))
                             }
                         }
+                        shouldUseVisibleTagList.value = false
+                        shouldUseVisibleTaskList.value = false
+                        selectedTag = null
+                        cacheTagList.clear()
                     }
                 )
                 TagListSection(
@@ -169,8 +184,28 @@ fun MainView(
                         tags = tagList,
                     ),
                     onClickManageTag = param.onClickManageTag,
+                    onClickSomeTag = {
+                        if (selectedTag != null) {
+                            shouldUseVisibleTagList.value = false
+                            shouldUseVisibleTaskList.value = false
+                            tagList.clear()
+                            for (tagData in cacheTagList) {
+                                tagList.add(tagData)
+                            }
+
+                            selectedTag = null
+                            return@TagListSection
+                        }
+                        selectedTag = it
+                        onClickTag()
+                    }
                 )
-                TaskListSection(param = taskList)
+                if (shouldUseVisibleTaskList.value) {
+                    TaskListSection(param = visibleTaskList)
+                } else {
+                    TaskListSection(param = taskList)
+                }
+
             }
         }
     )
