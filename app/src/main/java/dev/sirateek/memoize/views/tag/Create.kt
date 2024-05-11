@@ -45,6 +45,7 @@ import dev.sirateek.memoize.repository.TagRepository
 
 @Composable
 fun TagCreate(
+    reminderSet: String,
     mContext: Context,
     onClickBack: () -> Unit
 ) {
@@ -145,7 +146,7 @@ fun TagCreate(
                 controller = controller,
             )
             Button(onClick = {
-                CreateTag(onClickBack, tagName, tagIcon, tagColorHex.value)
+                CreateTag(onClickBack, tagName, tagIcon, tagColorHex.value, reminderSet)
             }, modifier = Modifier
                 .fillMaxWidth()
                 .padding(10.dp)) {
@@ -155,7 +156,7 @@ fun TagCreate(
     }
 }
 
-fun CreateTag(onClickBack: () -> Unit, title: String, icon: String, color: String) {
+fun CreateTag(onClickBack: () -> Unit, title: String, icon: String, color: String, reminderSet: String) {
     val uid = Firebase.auth.currentUser?.uid
 
     val data = hashMapOf(
@@ -163,6 +164,7 @@ fun CreateTag(onClickBack: () -> Unit, title: String, icon: String, color: Strin
         "icon" to icon,
         "color" to "#$color",
         "uid" to uid,
+        "reminder_set" to reminderSet,
     )
     TagRepository().add(data).addOnSuccessListener {
         onClickBack()

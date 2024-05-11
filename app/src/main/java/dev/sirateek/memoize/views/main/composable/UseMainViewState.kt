@@ -1,8 +1,11 @@
 package dev.sirateek.memoize.views.main.composable
 
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -21,16 +24,17 @@ import dev.sirateek.memoize.views.tag.GetTags
 import dev.sirateek.memoize.views.tag.ParseTags
 
 data class UseMainViewStateReturn(
-    val tagList: SnapshotStateList<Tag>,
     val visibleTagList: SnapshotStateList<Tag>,
     val visibleTaskList: SnapshotStateList<Task>,
-    val reminderSetList: SnapshotStateList<ReminderSet>,
+    val selectedReminderSet: MutableState<String>,
     val onReload: () -> Unit,
-    val onClickTag: (Tag) -> Unit
+    val onClickTag: (Tag) -> Unit,
+    val onClickNextReminderSetList: () -> Unit
+
 )
 
 @Composable
-fun UseMainViewState(): (UseMainViewStateReturn) {
+fun UseMainViewState(onNewReminderSet: (String) -> Unit): (UseMainViewStateReturn) {
     // Task List Variable
     val taskList = remember {
         mutableStateListOf<Task>()
@@ -51,6 +55,9 @@ fun UseMainViewState(): (UseMainViewStateReturn) {
     val reminderSetList = remember {
         mutableStateListOf<ReminderSet>()
     }
+    val selectedReminderSetNumber = remember {
+        mutableIntStateOf(0)
+    }
     val selectedReminderSet = remember {
         mutableStateOf("")
     }
@@ -62,6 +69,8 @@ fun UseMainViewState(): (UseMainViewStateReturn) {
     val getTag = {
         GetTags(selectedReminderSet.value) {
             tagList.clear()
+            visibleTagList.clear()
+            visibleTagList.add(TodayTag)
             tagList.add(TodayTag)
             for (doc in it.documents) {
                 val parsedTag = ParseTags(doc)
@@ -73,6 +82,7 @@ fun UseMainViewState(): (UseMainViewStateReturn) {
     val getTask = {
         GetTasks(selectedReminderSet.value){
             taskList.clear()
+            visibleTaskList.clear()
             for (doc in it.documents) {
                 val parsedTask = ParseTask(doc)
                 taskList.add(parsedTask)
@@ -97,6 +107,7 @@ fun UseMainViewState(): (UseMainViewStateReturn) {
             reminderSetList.add(result)
         }
         selectedReminderSet.value = reminderSetList[0].title
+        onNewReminderSet(selectedReminderSet.value)
 
         getTag()
         getTask()
@@ -107,19 +118,34 @@ fun UseMainViewState(): (UseMainViewStateReturn) {
         getTask()
     }
 
+    val onClickNextReminderSetList =  {
+        selectedReminderSetNumber.intValue = (selectedReminderSetNumber.intValue + 1) % reminderSetList.size
+        selectedReminderSet.value = reminderSetList[selectedReminderSetNumber.intValue].title
+        onNewReminderSet(selectedReminderSet.value)
+        onReload()
+    }
+
     val onClickTag = fun(tag: Tag) {
-        selectedTag = tag
 
         // Clear all the visible.
         visibleTagList.clear()
         visibleTaskList.clear()
 
-        // Add the selected one to the tag list
-        visibleTagList.add(selectedTag!!)
+        if (selectedTag != null) {
+            for (tagData in tagList) {
+                visibleTagList.add(tagData)
+            }
+            selectedTag = null
+
+        } else {
+            selectedTag = tag
+            // Add the selected one to the tag list
+            visibleTagList.add(selectedTag!!)
+        }
 
         for (eachTask in taskList) {
             for (eachTag in eachTask.tag) {
-                if (eachTag.id == selectedTag?.id) {
+                if (selectedTag == null || eachTag.id == selectedTag?.id) {
                     visibleTaskList.add(eachTask)
                     break
                 }
@@ -127,13 +153,12 @@ fun UseMainViewState(): (UseMainViewStateReturn) {
         }
     }
 
-
     return UseMainViewStateReturn(
-        tagList,
         visibleTagList = visibleTagList,
         visibleTaskList =  visibleTaskList,
-        reminderSetList,
+        selectedReminderSet = selectedReminderSet,
         onReload = onReload,
-        onClickTag = onClickTag
+        onClickTag = onClickTag,
+        onClickNextReminderSetList = onClickNextReminderSetList,
     )
 }

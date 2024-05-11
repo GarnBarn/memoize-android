@@ -136,6 +136,7 @@ fun ParseTags(doc: DocumentSnapshot): Tag {
     result.title = doc.getString("title")
     result.color = doc.getString("color").toString()
     result.icon = doc.getString("icon")
+    result.reminderSet = doc.getString("reminder_set").toString()
 
     return result
 }

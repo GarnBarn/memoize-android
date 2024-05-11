@@ -31,6 +31,7 @@ import androidx.compose.material3.TimeInput
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -109,6 +110,10 @@ fun CreateReminderView(
 
         val tagList = remember {
             mutableStateListOf<Tag>()
+        }
+
+        LaunchedEffect(Unit) {
+            GetReminderSet()
         }
 
         GetTags(reminderSet) {
@@ -292,6 +297,7 @@ fun CreateReminder(title: String, description: String, reminderDateTime: Date, t
         "uid" to user,
         "created_at" to Date(),
         "tags" to listOf(tagHash),
+        "reminder_set" to tag.reminderSet
     )
     ReminderRepository().add(docData).addOnSuccessListener {
         Log.d(TAG, "DocumentSnapshot written with ID: ${it.id}")

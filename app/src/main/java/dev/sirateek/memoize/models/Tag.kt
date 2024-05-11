@@ -9,6 +9,7 @@ data class Tag (
     var icon: String? = "🏷️",
     var color: String = "#FF0000",
     var isRealTag: Boolean = true,
+    var reminderSet: String = "",
 )
 
 class TagList(

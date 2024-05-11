@@ -38,6 +38,7 @@ data class MainViewParam (
     val onClickCreateTask: () -> Unit = {},
     val onClickProfileIcon: () ->Unit = {},
     val onClickManageTag: () -> Unit = {},
+    val onChangeReminderSet: (name: String) -> Unit = {},
 )
 
 @Preview(showBackground = true, showSystemUi = true)
@@ -45,7 +46,7 @@ data class MainViewParam (
 fun MainView(
     @PreviewParameter(MainViewParamParameterProvider::class) param: MainViewParam
 ) {
-    val useMainViewState = UseMainViewState()
+    val useMainViewState = UseMainViewState(param.onChangeReminderSet)
 
     Scaffold(
         floatingActionButton = {
@@ -59,24 +60,21 @@ fun MainView(
         content= { paddingValue ->
             Column(modifier = Modifier.padding(paddingValue)){
                 HeaderSection(
+                    useMainViewState.selectedReminderSet,
                     onClickProfileIcon = param.onClickProfileIcon,
-                    onClickReload = {
-
-                    }
+                    onClickReload = useMainViewState.onReload,
+                    onClickNextReminderSet = useMainViewState.onClickNextReminderSetList
                 )
                 TagListSection(
                     tags = TagList(
-                        tags = useMainViewState.tagList,
+                        tags = useMainViewState.visibleTagList,
                     ),
                     onClickManageTag = param.onClickManageTag,
                     onClickSomeTag = {
                         useMainViewState.onClickTag(it)
                     }
                 )
-
                 TaskListSection(param = useMainViewState.visibleTaskList, onClickTag = useMainViewState.onClickTag)
-
-
             }
         }
     )

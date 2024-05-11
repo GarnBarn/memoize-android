@@ -10,6 +10,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -54,6 +56,10 @@ class MainActivity: ComponentActivity() {
 @Composable
 fun BaseNavHost(ctx: Context, signOutFunction: () -> Unit) {
     val navController = rememberNavController()
+    val reminderSetRemember = remember {
+        mutableStateOf("")
+    }
+
     NavHost(navController = navController, startDestination = "main") {
         composable("main") {
             MainView(
@@ -66,6 +72,9 @@ fun BaseNavHost(ctx: Context, signOutFunction: () -> Unit) {
                     },
                     onClickManageTag = {
                         navController.navigate("tag-manage")
+                    },
+                    onChangeReminderSet = {
+                        reminderSetRemember.value = it
                     }
                 )
             )
@@ -73,8 +82,7 @@ fun BaseNavHost(ctx: Context, signOutFunction: () -> Unit) {
 
         composable("create-reminder") {
             CreateReminderView(
-                // TODO: Find a way to add the appropriate reminder set
-                "",
+                reminderSetRemember.value,
                 ctx,
             ) {
                 navController.popBackStack()
@@ -91,9 +99,8 @@ fun BaseNavHost(ctx: Context, signOutFunction: () -> Unit) {
         }
 
         composable("tag-manage") {
-            // TODO: Find a way to add the appropriate reminder set
             TagManage(
-                "",
+                reminderSetRemember.value,
                 ctx,
                 {
                     navController.popBackStack()
@@ -106,6 +113,7 @@ fun BaseNavHost(ctx: Context, signOutFunction: () -> Unit) {
 
         composable("tag-create") {
             TagCreate(
+                reminderSetRemember.value,
                 ctx,
                 {
                     navController.popBackStack()
