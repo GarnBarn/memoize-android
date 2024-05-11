@@ -21,15 +21,12 @@ import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.ktx.Firebase
+import dev.sirateek.memoize.models.ReminderSet
 import dev.sirateek.memoize.models.Tag
 import dev.sirateek.memoize.models.TagList
 import dev.sirateek.memoize.models.Task
 import dev.sirateek.memoize.repository.ReminderRepository
-import dev.sirateek.memoize.views.tag.GetTags
-import dev.sirateek.memoize.views.tag.ParseTags
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import dev.sirateek.memoize.views.main.composable.UseMainViewState
 
 val TodayTag = Tag("today", title = "today", isRealTag = false, color = "#8f8f8f")
 class MainViewParamParameterProvider : PreviewParameterProvider<MainViewParam> {
@@ -48,110 +45,8 @@ data class MainViewParam (
 fun MainView(
     @PreviewParameter(MainViewParamParameterProvider::class) param: MainViewParam
 ) {
+    val useMainViewState = UseMainViewState()
 
-    val taskList = remember {
-        mutableStateListOf<Task>()
-    }
-    var tagList = remember {
-        mutableStateListOf<Tag>()
-    }
-    var cacheTagList = remember {
-        mutableStateListOf<Tag>()
-    }
-
-    val visibleTaskList = remember {
-        mutableStateListOf<Task>()
-    }
-
-
-    GetTags {
-        tagList.clear()
-        tagList.add(TodayTag)
-        for (doc in it.documents) {
-            tagList.add(ParseTags(doc))
-        }
-    }
-
-    var selectedTag by remember {
-        mutableStateOf<Tag?>(null)
-    }
-    val shouldUseVisibleTaskList = remember {
-        mutableStateOf(false)
-    }
-
-
-    val shouldUseVisibleTagList = remember {
-        mutableStateOf(false)
-    }
-
-    val onClickTag = {
-        cacheTagList.clear()
-        for (tagData in tagList) {
-            cacheTagList.add(tagData)
-        }
-
-        tagList.clear()
-        tagList.add(selectedTag!!)
-
-        shouldUseVisibleTagList.value = true
-        visibleTaskList.clear()
-        for (eachTask in taskList) {
-            for (eachTag in eachTask.tag) {
-                if (eachTag.id == selectedTag?.id) {
-                    visibleTaskList.add(eachTask)
-                    break
-                }
-            }
-        }
-
-        shouldUseVisibleTaskList.value = true
-    }
-
-
-    val callback = {
-        it: QuerySnapshot ->
-        taskList.clear()
-        for (result in it.documents) {
-            val res = Task()
-            res.id = result.id
-            res.title = result.get("title").toString()
-            res.description = result.get("description").toString()
-
-            res.dueDate = result.getDate("reminder_date_time")!!
-            res.createdAt = result.getDate("created_at") !!
-            res.collection = result.get("collection").toString()
-
-            if (result.get("tags") != null) {
-                val tags = result.get("tags") as List<Map<String, String>>
-                for (tag in tags) {
-                    val tagData = Tag()
-                    tagData.id = tag["id"].toString()
-                    tagData.title = tag["title"].toString()
-                    tagData.color = tag["color"].toString()
-                    tagData.icon = tag["icon"].toString()
-                    tagData.isRealTag = true
-                    res.tag.tags.add(tagData)
-                }
-            }
-
-            val todayDateOnly = Date.parse(SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()))
-            val resDateOnly = Date.parse(SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(res.dueDate))
-
-            val testData = resDateOnly.compareTo(todayDateOnly)
-
-            if (testData == 0) {
-                res.tag.tags.add(0, TodayTag)
-            }
-
-            taskList.add(res)
-        }
-
-        taskList.sortBy { sortIT -> sortIT.dueDate }
-    }
-
-    GetTasks {
-        callback(it)
-    }
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
@@ -166,76 +61,21 @@ fun MainView(
                 HeaderSection(
                     onClickProfileIcon = param.onClickProfileIcon,
                     onClickReload = {
-                        GetTasks {
-                            callback(it)
-                        }
-                        GetTags {
-                            tagList.clear()
-                            tagList.add(TodayTag)
-                            for (doc in it.documents) {
-                                tagList.add(ParseTags(doc))
-                            }
-                        }
-                        shouldUseVisibleTagList.value = false
-                        shouldUseVisibleTaskList.value = false
-                        selectedTag = null
-                        cacheTagList.clear()
+
                     }
                 )
                 TagListSection(
                     tags = TagList(
-                        tags = tagList,
+                        tags = useMainViewState.tagList,
                     ),
                     onClickManageTag = param.onClickManageTag,
                     onClickSomeTag = {
-                        if (selectedTag != null) {
-                            shouldUseVisibleTagList.value = false
-                            shouldUseVisibleTaskList.value = false
-                            tagList.clear()
-                            for (tagData in cacheTagList) {
-                                tagList.add(tagData)
-                            }
-
-                            selectedTag = null
-                            return@TagListSection
-                        }
-                        selectedTag = it
-                        onClickTag()
+                        useMainViewState.onClickTag(it)
                     }
                 )
-                if (shouldUseVisibleTaskList.value) {
-                    TaskListSection(param = visibleTaskList, onClickTag = {
-                        if (selectedTag != null) {
-                            shouldUseVisibleTagList.value = false
-                            shouldUseVisibleTaskList.value = false
-                            tagList.clear()
-                            for (tagData in cacheTagList) {
-                                tagList.add(tagData)
-                            }
 
-                            selectedTag = null
-                            return@TaskListSection
-                        }
-                        selectedTag = it
-                        onClickTag()
-                    })
-                } else {
-                    TaskListSection(param = taskList, onClickTag = {
-                        if (selectedTag != null) {
-                            shouldUseVisibleTagList.value = false
-                            shouldUseVisibleTaskList.value = false
-                            tagList.clear()
-                            for (tagData in cacheTagList) {
-                                tagList.add(tagData)
-                            }
+                TaskListSection(param = useMainViewState.visibleTaskList, onClickTag = useMainViewState.onClickTag)
 
-                            selectedTag = null
-                            return@TaskListSection
-                        }
-                        selectedTag = it
-                        onClickTag()
-                    })
-                }
 
             }
         }
@@ -243,8 +83,9 @@ fun MainView(
 }
 
 fun GetTasks(
+    reminderSet: String,
     onSuccess: (QuerySnapshot) -> Unit
 ) {
     val uid = Firebase.auth.currentUser?.uid
-    ReminderRepository().whereEqualTo("uid", uid).get().addOnSuccessListener(onSuccess)
+    ReminderRepository().whereEqualTo("uid", uid).whereEqualTo("reminder_set", reminderSet).get().addOnSuccessListener(onSuccess)
 }

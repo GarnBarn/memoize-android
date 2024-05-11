@@ -15,3 +15,7 @@ fun TagRepository(): CollectionReference {
 fun UserRepository(): CollectionReference {
     return Firebase.firestore.collection("user")
 }
+
+fun ReminderSetRepository(): CollectionReference {
+    return Firebase.firestore.collection("reminder_set")
+}

@@ -39,6 +39,7 @@ import dev.sirateek.memoize.repository.TagRepository
 
 @Composable
 fun TagManage(
+    reminderSet: String,
     ctx: Context,
     onClickBack: () -> Unit,
     onClickCreateTag: () -> Unit
@@ -49,7 +50,7 @@ fun TagManage(
     }
 
 
-    GetTags {
+    GetTags(reminderSet) {
         tagList.clear()
         for (tagDoc in it.documents) {
             tagList.add(ParseTags(tagDoc))
@@ -102,7 +103,7 @@ fun TagManage(
                                     Button(
                                         onClick = {
                                             RemoveTag(ctx,tagData.id, {
-                                                GetTags {
+                                                GetTags(reminderSet) {
                                                     tagList.clear()
                                                     for (tagDoc in it.documents) {
                                                         tagList.add(ParseTags(tagDoc))
@@ -124,9 +125,9 @@ fun TagManage(
     )
 }
 
-fun GetTags(onSuccess: (QuerySnapshot) -> Unit) {
+fun GetTags(reminderSet: String,onSuccess: (QuerySnapshot) -> Unit) {
     val uid = Firebase.auth.currentUser?.uid
-    TagRepository().whereEqualTo("uid", uid).get().addOnSuccessListener(onSuccess)
+    TagRepository().whereEqualTo("uid", uid).whereEqualTo("reminder_set", reminderSet).get().addOnSuccessListener(onSuccess)
 }
 
 fun ParseTags(doc: DocumentSnapshot): Tag {

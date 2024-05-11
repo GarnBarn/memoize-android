@@ -14,10 +14,7 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.DatePicker
@@ -46,22 +43,29 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.firebase.auth.ktx.auth
-import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.ktx.Firebase
-import com.google.type.DateTime
 import dev.sirateek.memoize.components.TagBox
 import dev.sirateek.memoize.components.TagBoxParam
+import dev.sirateek.memoize.models.ReminderSet
 import dev.sirateek.memoize.models.Tag
+import dev.sirateek.memoize.models.Task
 import dev.sirateek.memoize.repository.ReminderRepository
+import dev.sirateek.memoize.repository.ReminderSetRepository
+import dev.sirateek.memoize.views.main.TodayTag
 import dev.sirateek.memoize.views.tag.GetTags
 import dev.sirateek.memoize.views.tag.ParseTags
-import java.text.DateFormat
+import kotlinx.coroutines.tasks.await
+import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.Locale
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateReminderView(
+    reminderSet: String,
     ctx: Context,
     onClickBack: () -> Unit,
 ) {
@@ -107,7 +111,7 @@ fun CreateReminderView(
             mutableStateListOf<Tag>()
         }
 
-        GetTags {
+        GetTags(reminderSet) {
             tagList.clear()
             for (doc in it.documents) {
                 tagList.add(ParseTags(doc))
@@ -293,4 +297,65 @@ fun CreateReminder(title: String, description: String, reminderDateTime: Date, t
         Log.d(TAG, "DocumentSnapshot written with ID: ${it.id}")
         onSuccess()
     }
+}
+
+suspend fun GetReminderSet(): QuerySnapshot? {
+    val user = Firebase.auth.currentUser?.uid
+    return ReminderSetRepository().whereEqualTo("uid", user).get().await()
+}
+
+fun AddReminderSet(name: String): ReminderSet {
+    val user = Firebase.auth.currentUser?.uid
+    ReminderSetRepository().add(hashMapOf(
+        "uid" to user,
+        "title" to name,
+    ))
+
+    return ReminderSet(
+        uid = user!!,
+        title = name,
+    )
+}
+
+fun ParseReminderSet(doc: DocumentSnapshot): ReminderSet {
+    val result = ReminderSet()
+    result.id = doc.id
+    result.title = doc.getString("title").toString()
+    result.uid = doc.getString("uid").toString()
+    return result
+}
+
+fun ParseTask(result: DocumentSnapshot): Task {
+    val res = Task()
+    res.id = result.id
+    res.title = result.get("title").toString()
+    res.description = result.get("description").toString()
+
+    res.dueDate = result.getDate("reminder_date_time")!!
+    res.createdAt = result.getDate("created_at") !!
+    res.collection = result.get("collection").toString()
+
+    if (result.get("tags") != null) {
+        val tags = result.get("tags") as List<Map<String, String>>
+        for (tag in tags) {
+            val tagData = Tag()
+            tagData.id = tag["id"].toString()
+            tagData.title = tag["title"].toString()
+            tagData.color = tag["color"].toString()
+            tagData.icon = tag["icon"].toString()
+            tagData.isRealTag = true
+            res.tag.tags.add(tagData)
+        }
+    }
+
+    val todayDateOnly = Date.parse(SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()))
+    val resDateOnly = Date.parse(SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(res.dueDate))
+
+    val testData = resDateOnly.compareTo(todayDateOnly)
+
+    if (testData == 0) {
+        res.tag.tags.add(0, TodayTag)
+    }
+
+    return res
 }

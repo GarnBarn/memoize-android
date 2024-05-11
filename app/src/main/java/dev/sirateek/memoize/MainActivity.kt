@@ -73,11 +73,12 @@ fun BaseNavHost(ctx: Context, signOutFunction: () -> Unit) {
 
         composable("create-reminder") {
             CreateReminderView(
+                // TODO: Find a way to add the appropriate reminder set
+                "",
                 ctx,
-                {
-                    navController.popBackStack()
-                },
-            )
+            ) {
+                navController.popBackStack()
+            }
         }
 
         composable("profile") {
@@ -90,7 +91,9 @@ fun BaseNavHost(ctx: Context, signOutFunction: () -> Unit) {
         }
 
         composable("tag-manage") {
+            // TODO: Find a way to add the appropriate reminder set
             TagManage(
+                "",
                 ctx,
                 {
                     navController.popBackStack()
