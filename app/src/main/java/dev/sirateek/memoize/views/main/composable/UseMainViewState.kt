@@ -92,6 +92,7 @@ fun UseMainViewState(): (UseMainViewStateReturn) {
                 reminderSetList.add(ParseReminderSet(doc))
             }
         } else {
+            AddReminderSet("💼 Work")
             val result = AddReminderSet("🏠 Home")
             reminderSetList.add(result)
         }
