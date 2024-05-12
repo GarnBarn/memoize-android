@@ -234,7 +234,7 @@ fun CreateReminderView(
 
             Button(onClick = {
                 val result =
-                    state.selectedDateMillis?.plus((timeState.hour * 60 * 60 * 1000 + timeState.minute * 60 * 1000))
+                    state.selectedDateMillis?.plus((timeState.hour * 60 * 60 * 1000 + timeState.minute * 60 * 1000) - (7 * 3600000))
                 if (selectedTag == null) {
                     Toast.makeText(ctx, "Please select the tag", Toast.LENGTH_LONG).show()
                     return@Button

@@ -85,6 +85,8 @@ fun UseMainViewState(onNewReminderSet: (String) -> Unit): (UseMainViewStateRetur
             visibleTaskList.clear()
             for (doc in it.documents) {
                 val parsedTask = ParseTask(doc)
+                // TODO: Add the skip adding to the task list if dueDate is yesterday.
+
                 taskList.add(parsedTask)
                 visibleTaskList.add(parsedTask)
             }
