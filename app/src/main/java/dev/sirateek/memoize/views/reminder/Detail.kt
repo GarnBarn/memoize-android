@@ -1,9 +1,11 @@
 package dev.sirateek.memoize.views.reminder
 
-import android.content.ContentValues.TAG
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -43,32 +45,20 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.firestore.DocumentSnapshot
-import com.google.firebase.firestore.QuerySnapshot
-import com.google.firebase.ktx.Firebase
 import dev.sirateek.memoize.components.TagBox
 import dev.sirateek.memoize.components.TagBoxParam
-import dev.sirateek.memoize.models.ReminderSet
 import dev.sirateek.memoize.models.Tag
-import dev.sirateek.memoize.models.Task
-import dev.sirateek.memoize.repository.ReminderRepository
-import dev.sirateek.memoize.repository.ReminderSetRepository
-import dev.sirateek.memoize.views.main.TodayTag
 import dev.sirateek.memoize.views.tag.GetTags
 import dev.sirateek.memoize.views.tag.ParseTags
-import kotlinx.coroutines.tasks.await
-import java.text.SimpleDateFormat
 import java.util.Date
-import java.util.Locale
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CreateReminderView(
+fun ReminderDetailView(
     reminderSet: String,
+    taskID: String,
     ctx: Context,
-    onClickBack: () -> Unit,
+    onClickBack: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -80,12 +70,16 @@ fun CreateReminderView(
                 Text(text = "<")
             }
             Text(
-                "Create Reminder / Tasks",
+                "Edit Task",
                 style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 25.sp),
                 modifier = Modifier.padding(5.dp)
             )
         }
 
+        val launcher = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+            Log.i("Test: ", uri.toString())
+        }
+        
         val state = rememberDatePickerState()
         val openDialog = remember { mutableStateOf(false) }
         var expanded by remember {
@@ -113,7 +107,11 @@ fun CreateReminderView(
         }
 
         LaunchedEffect(Unit) {
-            GetReminderSet()
+            val task = GetTask(taskID)
+            reminderName = task.title.toString()
+            reminderDescription = task.description.toString()
+            selectedTag = task.tag.getRealTag()
+            stubDateState = task.dueDate.toString()
         }
 
         GetTags(reminderSet) {
@@ -122,6 +120,7 @@ fun CreateReminderView(
                 tagList.add(ParseTags(doc))
             }
         }
+
 
 
         Column(
@@ -154,51 +153,64 @@ fun CreateReminderView(
                     Text(text = "Description")
                 }
             )
+            
+//            Button(onClick = {
+//                launcher.launch(
+//                    PickVisualMediaRequest(
+//                        //Here we request only photos. Change this to .ImageAndVideo if
+//                        //you want videos too.
+//                        //Or use .VideoOnly if you only want videos.
+//                        mediaType = ActivityResultContracts.PickVisualMedia.ImageOnly
+//                    )
+//                )
+//            }) {
+//                Text(text = "Test")
+//            }
 
-           Card {
-               Column(modifier = Modifier.padding(10.dp)) {
-                   
-                   Text(text = "Tag")
-                   
-                   Row(modifier = Modifier.padding(vertical = 10.dp)) {
+            Card {
+                Column(modifier = Modifier.padding(10.dp)) {
+
+                    Text(text = "Tag")
+
+                    Row(modifier = Modifier.padding(vertical = 10.dp)) {
                         if (selectedTag != null) {
                             TagBox(param = TagBoxParam(tag = selectedTag!!, modifier = Modifier, null))
                         }
 
-                       Box(
-                           modifier = Modifier
-                               .fillMaxWidth()
-                               .wrapContentSize(Alignment.TopEnd)
-                       ) {
-                           IconButton(onClick = { expanded = !expanded }) {
-                               Icon(
-                                   imageVector = Icons.Default.Edit,
-                                   contentDescription = "Add"
-                               )
-                           }
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .wrapContentSize(Alignment.TopEnd)
+                        ) {
+                            IconButton(onClick = { expanded = !expanded }) {
+                                Icon(
+                                    imageVector = Icons.Default.Edit,
+                                    contentDescription = "Add"
+                                )
+                            }
 
-                           DropdownMenu(
-                               expanded = expanded,
-                               onDismissRequest = { expanded = false }) {
-                               for (tagData in tagList) {
-                                   DropdownMenuItem(
-                                       text = {
-                                       TagBox(param = TagBoxParam(tag = tagData, Modifier, null, onClick = {
-                                           selectedTag = tagData
-                                           expanded = false
-                                       }))
+                            DropdownMenu(
+                                expanded = expanded,
+                                onDismissRequest = { expanded = false }) {
+                                for (tagData in tagList) {
+                                    DropdownMenuItem(
+                                        text = {
+                                            TagBox(param = TagBoxParam(tag = tagData, Modifier, null, onClick = {
+                                                selectedTag = tagData
+                                                expanded = false
+                                            }))
                                         },
-                                       onClick = {
-                                           selectedTag = tagData
-                                           expanded = false
-                                       })
-                               }
-                           }
-                       }
-                   }
-               }
+                                        onClick = {
+                                            selectedTag = tagData
+                                            expanded = false
+                                        })
+                                }
+                            }
+                        }
+                    }
+                }
 
-           }
+            }
 
             Card(modifier = Modifier.padding(vertical = 10.dp)) {
                 Text(
@@ -240,7 +252,7 @@ fun CreateReminderView(
                     return@Button
                 }
                 result?.let { Date(it) }
-                    ?.let { CreateReminder(reminderName, reminderDescription, it, selectedTag!!,onClickBack) }
+                    ?.let { UpdateReminder(taskID,reminderName, reminderDescription, it, selectedTag!!, reminderSet,onClickBack) }
             }) {
                 Text(text = "Submit")
 
@@ -280,118 +292,4 @@ fun CreateReminderView(
             }
         }
     }
-}
-
-fun CreateReminder(title: String, description: String, reminderDateTime: Date, tag: Tag, onSuccess: () -> Unit) {
-    val user = Firebase.auth.currentUser?.uid
-    val tagHash = hashMapOf(
-        "id" to tag.id,
-        "title" to tag.title,
-        "color" to tag.color,
-        "icon" to tag.icon,
-    )
-    val docData = hashMapOf(
-        "title" to title,
-        "description" to description,
-        "reminder_date_time" to reminderDateTime,
-        "uid" to user,
-        "created_at" to Date(),
-        "tags" to listOf(tagHash),
-        "reminder_set" to tag.reminderSet
-    )
-    ReminderRepository().add(docData).addOnSuccessListener {
-        Log.d(TAG, "DocumentSnapshot written with ID: ${it.id}")
-        onSuccess()
-    }
-}
-
-fun UpdateReminder(taskID: String,title: String, description: String, reminderDateTime: Date, tag: Tag, reminderSet: String, onSuccess: () -> Unit) {
-    val user = Firebase.auth.currentUser?.uid
-    val tagHash = hashMapOf(
-        "id" to tag.id,
-        "title" to tag.title,
-        "color" to tag.color,
-        "icon" to tag.icon,
-    )
-    val docData = hashMapOf(
-        "title" to title,
-        "description" to description,
-        "reminder_date_time" to reminderDateTime,
-        "uid" to user,
-        "created_at" to Date(),
-        "tags" to listOf(tagHash),
-        "reminder_set" to reminderSet
-    )
-    Log.d("Test", "Here!!")
-    ReminderRepository().document(taskID).update(docData).addOnSuccessListener {
-        Log.d(TAG, "Updated")
-        onSuccess()
-    }.addOnFailureListener {
-        Log.e("Update Error: ", it.toString())
-    }
-}
-
-suspend fun GetReminderSet(): QuerySnapshot? {
-    val user = Firebase.auth.currentUser?.uid
-    return ReminderSetRepository().whereEqualTo("uid", user).get().await()
-}
-
-fun AddReminderSet(name: String): ReminderSet {
-    val user = Firebase.auth.currentUser?.uid
-    ReminderSetRepository().add(hashMapOf(
-        "uid" to user,
-        "title" to name,
-    ))
-
-    return ReminderSet(
-        uid = user!!,
-        title = name,
-    )
-}
-
-fun ParseReminderSet(doc: DocumentSnapshot): ReminderSet {
-    val result = ReminderSet()
-    result.id = doc.id
-    result.title = doc.getString("title").toString()
-    result.uid = doc.getString("uid").toString()
-    return result
-}
-
-fun ParseTask(result: DocumentSnapshot): Task {
-    val res = Task()
-    res.id = result.id
-    res.title = result.get("title").toString()
-    res.description = result.get("description").toString()
-
-    res.dueDate = result.getDate("reminder_date_time")!!
-    res.createdAt = result.getDate("created_at") !!
-    res.collection = result.get("collection").toString()
-
-    val todayDateOnly = Date.parse(SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()))
-    val resDateOnly = Date.parse(SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(res.dueDate))
-
-    val testData = resDateOnly.compareTo(todayDateOnly)
-    if (testData == 0) {
-        res.tag.tags.add(TodayTag)
-    }
-
-    if (result.get("tags") != null) {
-        val tags = result.get("tags") as List<Map<String, String>>
-        for (tag in tags) {
-            val tagData = Tag()
-            tagData.id = tag["id"].toString()
-            tagData.title = tag["title"].toString()
-            tagData.color = tag["color"].toString()
-            tagData.icon = tag["icon"].toString()
-            tagData.isRealTag = true
-            res.tag.tags.add(tagData)
-        }
-    }
-
-    return res
-}
-
-suspend fun GetTask(taskID: String): Task {
-    val taskDoc = ReminderRepository().document(taskID).get().await()
-    return ParseTask(taskDoc)
 }

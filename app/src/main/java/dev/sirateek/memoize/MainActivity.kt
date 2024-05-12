@@ -22,6 +22,7 @@ import dev.sirateek.memoize.views.main.MainView
 import dev.sirateek.memoize.views.main.MainViewParam
 import dev.sirateek.memoize.views.profile.ProfileView
 import dev.sirateek.memoize.views.reminder.CreateReminderView
+import dev.sirateek.memoize.views.reminder.ReminderDetailView
 import dev.sirateek.memoize.views.tag.TagCreate
 import dev.sirateek.memoize.views.tag.TagManage
 import kotlin.math.sign
@@ -59,6 +60,9 @@ fun BaseNavHost(ctx: Context, signOutFunction: () -> Unit) {
     val reminderSetRemember = remember {
         mutableStateOf("")
     }
+    val taskID = remember {
+        mutableStateOf("")
+    }
 
     NavHost(navController = navController, startDestination = "main") {
         composable("main") {
@@ -75,6 +79,10 @@ fun BaseNavHost(ctx: Context, signOutFunction: () -> Unit) {
                     },
                     onChangeReminderSet = {
                         reminderSetRemember.value = it
+                    },
+                    onClickTask = {
+                        taskID.value = it
+                        navController.navigate("reminder-edit")
                     }
                 )
             )
@@ -115,10 +123,15 @@ fun BaseNavHost(ctx: Context, signOutFunction: () -> Unit) {
             TagCreate(
                 reminderSetRemember.value,
                 ctx,
-                {
-                    navController.popBackStack()
-                },
-            )
+            ) {
+                navController.popBackStack()
+            }
+        }
+
+        composable("reminder-edit") {
+            ReminderDetailView(reminderSet = reminderSetRemember.value, taskID = taskID.value, ctx = ctx) {
+                navController.popBackStack()
+            }
         }
     }
 }

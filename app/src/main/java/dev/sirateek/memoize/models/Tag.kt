@@ -33,6 +33,15 @@ class TagList(
         return Color.Black
     }
 
+    fun getRealTag(): Tag {
+        for (tag in tags) {
+            if (tag.isRealTag) {
+                return tag
+            }
+        }
+        return Tag()
+    }
+
     override fun iterator(): Iterator<Tag> {
         return tags.iterator()
     }

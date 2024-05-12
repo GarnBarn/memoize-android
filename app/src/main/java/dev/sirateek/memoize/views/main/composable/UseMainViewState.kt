@@ -91,7 +91,7 @@ fun UseMainViewState(onNewReminderSet: (String) -> Unit): (UseMainViewStateRetur
                 visibleTaskList.add(parsedTask)
             }
 
-            taskList.sortBy { sortIT -> sortIT.dueDate }
+            visibleTaskList.sortBy { sortIT -> sortIT.dueDate }
         }
     }
 
@@ -153,6 +153,8 @@ fun UseMainViewState(onNewReminderSet: (String) -> Unit): (UseMainViewStateRetur
                 }
             }
         }
+
+        visibleTaskList.sortBy { sortIT -> sortIT.dueDate }
     }
 
     return UseMainViewStateReturn(

@@ -23,7 +23,8 @@ import java.util.Date
 @Composable
 fun TaskListSection(
     param: MutableList<Task>,
-    onClickTag: (Tag) -> Unit
+    onClickTag: (Tag) -> Unit,
+    onClickTask: (taskID: String) -> Unit
 ) {
     // Tasks Section
     val scrollState = rememberScrollState()
@@ -36,7 +37,9 @@ fun TaskListSection(
                 TaskCardParam(
                     task,
                     Modifier,
-                    onClick = { },
+                    onClick = {
+                        onClickTask(task.id)
+                    },
                     onClickTag = onClickTag,
                 )
                 )

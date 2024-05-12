@@ -39,6 +39,7 @@ data class MainViewParam (
     val onClickProfileIcon: () ->Unit = {},
     val onClickManageTag: () -> Unit = {},
     val onChangeReminderSet: (name: String) -> Unit = {},
+    val onClickTask: (taskID: String) -> Unit = {},
 )
 
 @Preview(showBackground = true, showSystemUi = true)
@@ -74,7 +75,7 @@ fun MainView(
                         useMainViewState.onClickTag(it)
                     }
                 )
-                TaskListSection(param = useMainViewState.visibleTaskList, onClickTag = useMainViewState.onClickTag)
+                TaskListSection(param = useMainViewState.visibleTaskList, onClickTask = param.onClickTask,onClickTag = useMainViewState.onClickTag)
             }
         }
     )
